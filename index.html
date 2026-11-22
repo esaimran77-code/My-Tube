@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="ur-Latn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Mera Tube - Halal Filter</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0f0f0f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232f6f5e'/%3E%3Cpolygon points='26,20 46,32 26,44' fill='white'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0f0f0f; --bg-elev:#181818; --fg:#ffffff; --muted:#aaaaaa;
+    --accent:#2f6f5e; --accent-fg:#ffffff; --line:#2a2a2a; --card:#181818;
+    --danger:#ff4d4d; --chip:#222222;
+    color-scheme: dark;
+  }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font-family:'Inter',system-ui,-apple-system,sans-serif;
+    -webkit-font-smoothing:antialiased; overflow:hidden;
+    padding-left:max(0px, env(safe-area-inset-left,0px));
+    padding-right:max(0px, env(safe-area-inset-right,0px));
+  }
+  h1,h2,h3,.display{font-family:'Manrope',system-ui,sans-serif;}
+  a{color:inherit;}
+  img{max-width:100%; display:block;}
+  [hidden]{display:none!important;}
+  button{font-family:inherit;}
+
+  #app{position:fixed; inset:0; display:flex; flex-direction:column;}
+  .view{flex:1; min-height:0; overflow:hidden; display:none;}
+  .view.active{display:flex; flex-direction:column;}
+
+  /* ================= TOP BAR (home) ================= */
+  .topbar{
+    display:flex; align-items:center; gap:10px; padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;
+    border-bottom:1px solid var(--line); flex-shrink:0; background:var(--bg);
+  }
+  .topbar .mark{width:30px; height:30px; border-radius:8px; background:var(--accent); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .topbar .mark svg{width:14px; height:14px;}
+  .topbar h1{font-size:18px; font-weight:800; margin:0; letter-spacing:-.01em;}
+
+  /* ================= HOME ================= */
+  #homeScroll{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding-bottom:16px;}
+  .section-label{font-size:13px; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; padding:16px 16px 8px;}
+  .vcard{display:flex; flex-direction:column; padding:0 0 14px;}
+  .vcard .thumb{width:100%; aspect-ratio:16/9; background:var(--chip); overflow:hidden; position:relative;}
+  .vcard .thumb img{width:100%; height:100%; object-fit:cover;}
+  .vcard .dur{position:absolute; right:6px; bottom:6px; background:rgba(0,0,0,.8); color:#fff; font-size:11px; padding:2px 5px; border-radius:4px; font-weight:600;}
+  .vcard .meta{display:flex; gap:10px; padding:10px 16px 0;}
+  .vcard .meta img{width:36px; height:36px; border-radius:50%; object-fit:cover; flex-shrink:0;}
+  .vcard .meta .txt{min-width:0;}
+  .vcard .meta h3{font-size:14.5px; font-weight:600; margin:0 0 4px; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .vcard .meta p{font-size:12.5px; color:var(--muted); margin:0;}
+
+  .shelf{padding:4px 0 10px;}
+  .shelf-row{display:flex; gap:10px; overflow-x:auto; padding:0 16px 4px; scrollbar-width:none;}
+  .shelf-row::-webkit-scrollbar{display:none;}
+  .shortcard{flex-shrink:0; width:120px; cursor:pointer;}
+  .shortcard .thumb{width:120px; height:213px; border-radius:12px; overflow:hidden; background:var(--chip); position:relative;}
+  .shortcard .thumb img{width:100%; height:100%; object-fit:cover;}
+  .shortcard .thumb .playicon{position:absolute; left:8px; bottom:8px; width:20px; height:20px;}
+  .shortcard h4{font-size:12.5px; font-weight:600; margin:6px 2px 0; line-height:1.3; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+
+  .emptystate{text-align:center; padding:60px 24px; color:var(--muted);}
+  .emptystate .mark{width:56px; height:56px; border-radius:16px; background:var(--chip); margin:0 auto 16px; display:flex; align-items:center; justify-content:center; font-size:24px;}
+  .emptystate h3{color:var(--fg); margin:0 0 8px; font-size:17px;}
+  .emptystate p{margin:0 0 16px; font-size:14px; max-width:280px; margin-inline:auto;}
+  .emptystate .btn{display:inline-flex;}
+
+  /* ================= SHORTS FEED ================= */
+  #shortsView{background:#000;}
+  #shortsFeed{flex:1; overflow-y:scroll; scroll-snap-type:y mandatory; overscroll-behavior-y:contain; -webkit-overflow-scrolling:touch;}
+  .short-item{
+    position:relative; width:100%; height:100vh; height:100dvh; scroll-snap-align:start; scroll-snap-stop:always;
+    background:#000; overflow:hidden; display:flex; align-items:center; justify-content:center;
+  }
+  .short-item .poster{position:absolute; inset:0; background-size:cover; background-position:center; filter:blur(18px) brightness(.5); transform:scale(1.2);}
+  .short-item .playerwrap{position:relative; width:100%; height:100%; max-width:480px; margin:0 auto;}
+  .short-item .yt-slot{position:absolute; inset:0; width:100%; height:100%;}
+  .short-item .yt-slot iframe{width:100%; height:100%; pointer-events:none;}
+  .short-item .tapcatch{position:absolute; inset:0; z-index:5;}
+
+  .soundhint{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:6;
+    background:rgba(0,0,0,.55); color:#fff; width:56px; height:56px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .25s; pointer-events:none;
+  }
+  .soundhint.show{opacity:1;}
+  .soundhint svg{width:26px; height:26px;}
+
+  .progress-track{position:absolute; left:0; right:0; bottom:0; height:3px; background:rgba(255,255,255,.25); z-index:7;}
+  .progress-fill{height:100%; width:0%; background:#fff;}
+
+  .short-item .rightrail{
+    position:absolute; right:10px; bottom:calc(90px + env(safe-area-inset-bottom,0px)); z-index:8;
+    display:flex; flex-direction:column; align-items:center; gap:20px;
+  }
+  .rail-btn{background:none; border:none; color:#fff; display:flex; flex-direction:column; align-items:center; gap:4px; cursor:pointer; padding:4px;}
+  .rail-btn svg{width:28px; height:28px; filter:drop-shadow(0 1px 3px rgba(0,0,0,.6));}
+  .rail-btn span{font-size:11.5px; font-weight:700; text-shadow:0 1px 3px rgba(0,0,0,.6);}
+  .rail-btn.liked svg{fill:#ff3b5c; stroke:#ff3b5c;}
+
+  .short-item .bottominfo{
+    position:absolute; left:14px; right:76px; bottom:calc(90px + env(safe-area-inset-bottom,0px)); z-index:8;
+    display:flex; align-items:center; gap:10px; color:#fff;
+  }
+  .bottominfo img{width:34px; height:34px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,.3); flex-shrink:0;}
+  .bottominfo .chname{font-size:13.5px; font-weight:700; text-shadow:0 1px 3px rgba(0,0,0,.6);}
+  .bottominfo .vtitle{font-size:12.5px; font-weight:500; color:#eee; text-shadow:0 1px 3px rgba(0,0,0,.6); display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-top:2px;}
+
+  .short-item .backbtn{position:absolute; left:10px; top:calc(10px + env(safe-area-inset-top,0px)); z-index:9; width:38px; height:38px; border-radius:50%; background:rgba(0,0,0,.4); border:none; display:flex; align-items:center; justify-content:center;}
+  .short-item .backbtn svg{width:18px; height:18px; stroke:#fff;}
+
+  .shortsloading{display:flex; align-items:center; justify-content:center; height:100vh; height:100dvh; color:var(--muted); scroll-snap-align:start;}
+
+  /* ================= COMMENTS SHEET ================= */
+  .sheet-backdrop{position:fixed; inset:0; background:rgba(0,0,0,.5); z-index:50; display:flex; align-items:flex-end;}
+  .sheet{background:#fff; color:#111; width:100%; max-height:72vh; border-radius:18px 18px 0 0; display:flex; flex-direction:column; padding-bottom:env(safe-area-inset-bottom,0px);}
+  .sheet-head{display:flex; align-items:center; justify-content:space-between; padding:14px 18px; border-bottom:1px solid #eee;}
+  .sheet-head h3{margin:0; font-size:15.5px;}
+  .sheet-close{background:none; border:none; font-size:18px; color:#888; cursor:pointer;}
+  .sheet-body{overflow-y:auto; padding:10px 18px 18px;}
+  .comment{display:flex; gap:10px; padding:10px 0; border-bottom:1px solid #f1f1f1;}
+  .comment img{width:30px; height:30px; border-radius:50%; object-fit:cover; flex-shrink:0;}
+  .comment .cbody{min-width:0;}
+  .comment .cauthor{font-size:12.5px; font-weight:700; margin-bottom:2px;}
+  .comment .ctext{font-size:13px; line-height:1.4; color:#222; word-wrap:break-word;}
+  .sheet-msg{text-align:center; color:#888; padding:30px 0; font-size:13.5px;}
+
+  /* ================= BOTTOM NAV ================= */
+  #bottomnav{
+    display:flex; flex-shrink:0; background:rgba(15,15,15,.92); backdrop-filter:blur(10px);
+    border-top:1px solid rgba(255,255,255,.08); padding:8px max(0px, env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(0px, env(safe-area-inset-left,0px));
+    position:relative; z-index:20;
+  }
+  .navbtn{flex:1; background:none; border:none; color:#aaa; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 0; cursor:pointer;}
+  .navbtn svg{width:23px; height:23px;}
+  .navbtn span{font-size:10.5px; font-weight:600;}
+  .navbtn.active{color:#fff;}
+
+  /* ================= PIN LOCK (forced light) ================= */
+  #lockView{position:fixed; inset:0; background:#ffffff; z-index:100; display:none; flex-direction:column; align-items:center; justify-content:center; padding:calc(20px + env(safe-area-inset-top,0px)) 24px calc(20px + env(safe-area-inset-bottom,0px));}
+  #lockView.active{display:flex;}
+  #lockView .lockback{position:absolute; left:16px; top:calc(16px + env(safe-area-inset-top,0px)); width:38px; height:38px; border-radius:50%; background:#f3f3f3; border:none; display:flex; align-items:center; justify-content:center;}
+  #lockView .lockback svg{width:18px; height:18px; stroke:#333;}
+  .lock-icon{width:60px; height:60px; border-radius:18px; background:#eef6f3; display:flex; align-items:center; justify-content:center; margin-bottom:18px;}
+  .lock-icon svg{width:28px; height:28px; stroke:#2f6f5e;}
+  #lockView h2{font-size:19px; margin:0 0 4px; color:#111; font-weight:800;}
+  #lockView p.sub{font-size:13.5px; color:#8a8a8a; margin:0 0 26px; text-align:center;}
+  .dots{display:flex; gap:16px; margin-bottom:30px;}
+  .dot{width:15px; height:15px; border-radius:50%; border:2px solid #cfcfcf; transition:all .15s;}
+  .dot.filled{background:#2f6f5e; border-color:#2f6f5e;}
+  .dots.shake{animation:shakeit .4s;}
+  .dots.shake .dot{border-color:#e05a5a;}
+  @keyframes shakeit{ 0%,100%{transform:translateX(0);} 20%{transform:translateX(-10px);} 40%{transform:translateX(10px);} 60%{transform:translateX(-8px);} 80%{transform:translateX(8px);} }
+  .keypad{display:grid; grid-template-columns:repeat(3,72px); gap:16px; justify-content:center;}
+  .key{width:72px; height:72px; border-radius:50%; background:#f4f4f4; border:none; font-size:26px; font-weight:600; color:#222; display:flex; align-items:center; justify-content:center;}
+  .key:active{background:#e6e6e6;}
+  .key.ghost{background:none;}
+  .key.backspace svg{width:22px; height:22px;}
+  .defaulthint{margin-top:22px; font-size:12px; color:#b3b3b3; text-align:center; max-width:260px;}
+
+  /* ================= SETTINGS (forced light) ================= */
+  #settingsView{position:fixed; inset:0; background:#fff; color:#111; z-index:90; display:none; flex-direction:column;}
+  #settingsView.active{display:flex;}
+  .set-head{display:flex; align-items:center; gap:12px; padding:calc(14px + env(safe-area-inset-top,0px)) 16px 14px; border-bottom:1px solid #eee;}
+  .set-head button{background:#f3f3f3; border:none; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center;}
+  .set-head button svg{width:17px; height:17px; stroke:#333;}
+  .set-head h2{font-size:17px; margin:0; font-weight:800;}
+  #settingsBody{flex:1; overflow-y:auto; padding:18px 16px calc(24px + env(safe-area-inset-bottom,0px));}
+  .set-section{background:#f8f8f8; border:1px solid #eee; border-radius:14px; padding:16px; margin-bottom:16px;}
+  .set-section h3{font-size:14px; margin:0 0 12px; font-weight:700;}
+  .set-row{display:flex; gap:8px; margin-bottom:10px;}
+  .set-row input{flex:1; min-width:0; background:#fff; border:1px solid #ddd; color:#111; border-radius:10px; padding:11px 12px; font-size:14.5px; font-family:inherit;}
+  .set-btn{border:none; border-radius:10px; padding:11px 16px; font-size:13.5px; font-weight:700; cursor:pointer; background:#2f6f5e; color:#fff; white-space:nowrap; font-family:'Manrope',sans-serif;}
+  .set-btn.ghost{background:#eee; color:#333;}
+  .showhide{background:#eee; border:none; border-radius:10px; padding:0 12px; color:#666; cursor:pointer;}
+  .set-help{margin-top:10px; font-size:12px; color:#999; line-height:1.6;}
+  .set-help a{color:#2f6f5e; font-weight:600;}
+  .chiplist{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px;}
+  .set-chip{display:flex; align-items:center; gap:7px; background:#fff; border:1px solid #ddd; border-radius:999px; padding:6px 7px; font-size:12.5px;}
+  .set-chip img{width:22px; height:22px; border-radius:50%; object-fit:cover;}
+  .set-chip button{background:none; border:none; color:#999; cursor:pointer; font-size:14px; width:18px; height:18px;}
+  .set-empty{color:#999; font-size:13px; padding:4px 2px;}
+  .set-status{font-size:12.5px; padding:9px 11px; border-radius:9px; margin-top:8px;}
+  .set-status.error{background:#fdeaea; color:#c13a3a;}
+  .set-status.ok{background:#eaf6f0; color:#2f6f5e;}
+  .set-note{font-size:12px; color:#999; margin-top:10px; line-height:1.6;}
+  
+  /* Switch styling */
+  .switch{position:relative; display:inline-block; width:44px; height:24px; flex-shrink:0;}
+  .switch input{opacity:0; width:0; height:0;}
+  .slider{position:absolute; cursor:pointer; top:0; left:0; right:0; bottom:0; background-color:#ccc; transition:.4s; border-radius:24px;}
+  .slider:before{position:absolute; content:""; height:18px; width:18px; left:3px; bottom:3px; background-color:white; transition:.4s; border-radius:50%;}
+  input:checked + .slider{background-color:#2f6f5e;}
+  input:checked + .slider:before{transform:translateX(20px);}
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===== HOME VIEW ===== -->
+  <div class="view active" id="homeView">
+    <div class="topbar">
+      <div class="mark"><svg viewBox="0 0 24 24" fill="none"><polygon points="9,7 18,12 9,17" fill="#fff"/></svg></div>
+      <h1>Mera Tube (Halal Filter)</h1>
+    </div>
+    <div id="homeScroll"></div>
+  </div>
+
+  <!-- ===== SHORTS VIEW ===== -->
+  <div class="view" id="shortsView">
+    <div id="shortsFeed"></div>
+  </div>
+
+  <div id="bottomnav">
+    <button class="navbtn active" data-tab="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg>
+      <span>Home</span>
+    </button>
+    <button class="navbtn" data-tab="shorts">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="4"/><path d="M11 10.5 15 13l-4 2.5z" fill="currentColor" stroke="none"/></svg>
+      <span>Shorts</span>
+    </button>
+    <button class="navbtn" id="navSettings">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      <span>Settings</span>
+    </button>
+  </div>
+
+</div>
+
+<!-- ===== PIN LOCK ===== -->
+<div id="lockView">
+  <button class="lockback" id="lockBack"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+  <div class="lock-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg></div>
+  <h2>Settings Lock</h2>
+  <p class="sub">Apna 4-digit code darj karein</p>
+  <div class="dots" id="pinDots">
+    <div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+  </div>
+  <div class="keypad" id="pinKeypad">
+    <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
+    <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
+    <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
+    <button class="key ghost"></button><button class="key" data-k="0">0</button>
+    <button class="key backspace" data-k="back"><svg viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg></button>
+  </div>
+  <p class="defaulthint" id="defaultHint">Pehli baar? Default code <strong>1234</strong> try karein — Settings ke andar isay badal sakte hain.</p>
+</div>
+
+<!-- ===== SETTINGS SHEET ===== -->
+<div id="settingsView">
+  <div class="set-head">
+    <button id="settingsClose"><svg viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <h2>Settings</h2>
+  </div>
+  <div id="settingsBody">
+
+    <!-- FILTER TOGGLE -->
+    <div class="set-section" style="border: 2px solid #2f6f5e; background: #eef6f3;">
+      <h3 style="display:flex; justify-content:space-between; align-items:center; margin:0; color:#2f6f5e;">
+        Strict Islamic Filter
+        <label class="switch">
+          <input type="checkbox" id="filterToggle" checked>
+          <span class="slider"></span>
+        </label>
+      </h3>
+      <div class="set-note" style="color:#2f6f5e; margin-top:8px;">
+        Block karega: Gaanay, Qawwali, Dramay, Cooking, Vlogs, aur aurat wali videos.
+      </div>
+    </div>
+
+    <div class="set-section">
+      <h3>YouTube API Key</h3>
+      <div class="set-row">
+        <input type="password" id="apiKeyInput" placeholder="Apni API key yahan paste karein">
+        <button class="showhide" id="toggleKeyVis" type="button">👁</button>
+      </div>
+      <button class="set-btn" id="saveKeyBtn">Save</button>
+      <details class="set-help">
+        <summary style="cursor:pointer; font-weight:700; color:#2f6f5e; list-style:none;">API key kaise banayen?</summary>
+        <ol style="padding-left:18px; margin-top:8px;">
+          <li><a href="https://console.cloud.google.com/apis/library/youtube.googleapis.com" target="_blank" rel="noopener">YouTube Data API v3</a> ko Enable karein.</li>
+        </ol>
+      </details>
+      <div id="keyStatus"></div>
+    </div>
+
+    <div class="set-section">
+      <h3>Channels</h3>
+      <div class="set-row">
+        <input type="text" id="channelInput" placeholder="Channel URL, @handle, ya ID">
+        <button class="set-btn" id="addChannelBtn">Add</button>
+      </div>
+      <div class="chiplist" id="chipList"></div>
+      <div id="channelStatus"></div>
+      <div style="margin-top:12px; padding-top:12px; border-top:1px dashed #ddd;">
+        <button class="set-btn ghost" id="importFileBtn" type="button">📁 File se Bohat Saray Channels Add Karein</button>
+        <input type="file" id="importFileInput" accept=".json,application/json" hidden>
+        <div id="importProgress"></div>
+      </div>
+    </div>
+
+    <div class="set-section">
+      <h3>App Lock Code Badlein</h3>
+      <div class="set-row">
+        <input type="tel" inputmode="numeric" maxlength="4" id="newPinInput" placeholder="Naya 4-digit code">
+        <input type="tel" inputmode="numeric" maxlength="4" id="confirmPinInput" placeholder="Dobara likhein">
+      </div>
+      <button class="set-btn ghost" id="savePinBtn">Code Save Karein</button>
+      <div id="pinStatus"></div>
+    </div>
+
+    <p class="set-note">Note: API key aur channels sirf is browser mein save hote hain.</p>
+  </div>
+</div>
+
+<!-- ===== COMMENTS SHEET ===== -->
+<div class="sheet-backdrop" id="commentsBackdrop" hidden>
+  <div class="sheet">
+    <div class="sheet-head"><h3>Comments</h3><button class="sheet-close" id="commentsClose">✕</button></div>
+    <div class="sheet-body" id="commentsBody"></div>
+  </div>
+</div>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ============ storage keys ============ */
+  var LS_KEY='meratube_api_key', LS_CHANNELS='meratube_channels', LS_PIN='meratube_pin', LS_SOUND='meratube_sound_on', LS_WATCHSCORE='meratube_watchscore', LS_FILTER='meratube_filter_on';
+
+  function safeGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+  function safeSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+  function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function fmtCount(n){ n=Number(n)||0; if(n>=1000000) return (n/1000000).toFixed(1).replace(/\.0$/,'')+'M'; if(n>=1000) return (n/1000).toFixed(1).replace(/\.0$/,'')+'K'; return String(n); }
+  function parseDur(iso){ var m=(iso||'').match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/); if(!m) return 0; var h=+(m[1]||0),mn=+(m[2]||0),s=+(m[3]||0); return h*3600+mn*60+s; }
+  function fmtDur(sec){ sec=Math.round(sec); var m=Math.floor(sec/60), s=sec%60; return m+':'+(s<10?'0':'')+s; }
+  function timeAgo(iso){ var d=new Date(iso); var diff=(Date.now()-d.getTime())/1000; var units=[[31536000,'saal'],[2592000,'mahina'],[86400,'din'],[3600,'ghanta'],[60,'minute']]; for(var i=0;i<units.length;i++){ var v=Math.floor(diff/units[i][0]); if(v>=1) return v+' '+units[i][1]+' pehle'; } return 'Abhi abhi'; }
+
+  function runLimited(items, limit, taskFn){
+    return new Promise(function(resolve){
+      var results = new Array(items.length);
+      var next = 0, active = 0, done = 0;
+      if(!items.length){ resolve(results); return; }
+      function pump(){
+        while(active < limit && next < items.length){
+          (function(i){
+            active++; next++;
+            Promise.resolve().then(function(){ return taskFn(items[i], i); })
+              .then(function(r){ results[i]=r; })
+              .catch(function(){ results[i]=null; })
+              .then(function(){ active--; done++; if(done===items.length) resolve(results); else pump(); });
+          })(next);
+        }
+      }
+      pump();
+    });
+  }
+
+  /* ============ state ============ */
+  var apiKey = safeGet(LS_KEY) || '';
+  var channels = [];
+  try{ channels = JSON.parse(safeGet(LS_CHANNELS) || '[]'); }catch(e){ channels=[]; }
+  var pin = safeGet(LS_PIN) || '1234';
+  var soundOn = safeGet(LS_SOUND) === '1';
+  
+  var isFilterOn = safeGet(LS_FILTER) !== '0'; // Default is ON
+
+  // List of words to BLOCK (Haram/Hated content)
+  var blockedKeywords = [
+    "song", "music", "qawwali", "naat", "drama", "cooking", "recipe", 
+    "vlog", "actress", "dance", "movie", "film", "serial", "tiktok", 
+    "girl", "woman", "ladies", "females", "item", "mujra", "rekhta", "ghazal"
+  ];
+
+  var watchScore = {};
+  try{ watchScore = JSON.parse(safeGet(LS_WATCHSCORE) || '{}'); }catch(e){ watchScore = {}; }
+  var watchScoreDirty = false;
+  function bumpWatchScore(channelId){
+    if(!channelId) return;
+    watchScore[channelId] = (watchScore[channelId]||0) + 1;
+    watchScoreDirty = true;
+  }
+  function flushWatchScore(){ if(watchScoreDirty){ safeSet(LS_WATCHSCORE, JSON.stringify(watchScore)); watchScoreDirty=false; } }
+  setInterval(flushWatchScore, 4000);
+
+  var videosPool = [];      
+  var seenIds = {};
+  var channelState = {};    
+  var longList = [], shortList = [];
+  var homeLongRenderedCount = 0;
+  var loadingMore = false;
+
+  /* ============ API ============ */
+  function apiGet(path, params){
+    params = Object.assign({ key: apiKey }, params);
+    var qs = Object.keys(params).map(function(k){ return encodeURIComponent(k)+'='+encodeURIComponent(params[k]); }).join('&');
+    return fetch('https://www.googleapis.com/youtube/v3/'+path+'?'+qs).then(function(res){
+      return res.json().catch(function(){ return {}; }).then(function(data){
+        if(!res.ok){ var msg=(data&&data.error&&data.error.message)?data.error.message:('Request failed ('+res.status+')'); throw new Error(msg); }
+        return data;
+      });
+    });
+  }
+
+  function parseChannelInput(raw){
+    raw=(raw||'').trim(); if(!raw) return null;
+    if(/youtube\.com|youtu\.be/i.test(raw)){
+      try{
+        var withProto=/^https?:\/\//i.test(raw)?raw:'https://'+raw;
+        var u=new URL(withProto); var segs=u.pathname.split('/').filter(Boolean);
+        if(segs[0]==='channel'&&segs[1]) return {kind:'id', value:segs[1]};
+        if(segs[0]&&segs[0].indexOf('@')===0) return {kind:'handle', value:segs[0]};
+        if((segs[0]==='c'||segs[0]==='user')&&segs[1]) return {kind:'legacy', value:segs[1]};
+        if(segs[0]) return {kind:'legacy', value:segs[0]};
+      }catch(e){}
+    }
+    if(raw.indexOf('@')===0) return {kind:'handle', value:raw};
+    if(/^UC[\w-]{10,}$/.test(raw)) return {kind:'id', value:raw};
+    return {kind:'handle', value:'@'+raw};
+  }
+
+  function resolveChannelId(identifier){
+    if(identifier.kind==='id') return Promise.resolve(identifier.value);
+    var p = Promise.resolve();
+    if(identifier.kind==='handle'){
+      p = apiGet('channels',{part:'id', forHandle:identifier.value}).then(function(d){ if(d.items&&d.items.length) return d.items[0].id; throw new Error('no'); }).catch(function(){ return null; });
+    } else if(identifier.kind==='legacy'){
+      p = apiGet('channels',{part:'id', forUsername:identifier.value}).then(function(d){ if(d.items&&d.items.length) return d.items[0].id; throw new Error('no'); }).catch(function(){ return null; });
+    } else { p = Promise.resolve(null); }
+    return p.then(function(id){
+      if(id) return id;
+      var query=identifier.value.replace(/^@/,'');
+      return apiGet('search',{part:'snippet', type:'channel', q:query, maxResults:1}).then(function(s){
+        if(s.items&&s.items.length) return s.items[0].id.channelId||s.items[0].snippet.channelId;
+        throw new Error('Channel nahi mila: "'+query+'"');
+      });
+    });
+  }
+
+  function fetchChannelMeta(channelId){
+    return apiGet('channels',{part:'snippet,contentDetails', id:channelId}).then(function(d){
+      if(!d.items||!d.items.length) throw new Error('Channel details nahi mile.');
+      var it=d.items[0];
+      return { id:it.id, title:it.snippet.title, thumb:(it.snippet.thumbnails&&(it.snippet.thumbnails.default||{}).url)||'', uploadsPlaylistId:it.contentDetails.relatedPlaylists.uploads };
+    });
+  }
+
+  function saveChannels(){ safeSet(LS_CHANNELS, JSON.stringify(channels)); }
+
+  function resolveChannelIdCheap(identifier){
+    if(identifier.kind==='id') return Promise.resolve(identifier.value);
+    if(identifier.kind==='handle'){
+      return apiGet('channels',{part:'id', forHandle:identifier.value}).then(function(d){ return (d.items&&d.items.length) ? d.items[0].id : null; }).catch(function(){ return null; });
+    }
+    if(identifier.kind==='legacy'){
+      return apiGet('channels',{part:'id', forUsername:identifier.value}).then(function(d){ return (d.items&&d.items.length) ? d.items[0].id : null; }).catch(function(){ return null; });
+    }
+    return Promise.resolve(null);
+  }
+
+  /* ============ video pool / pagination ============ */
+  function classify(it, ch){
+    if(!it.id || !it.snippet) return null;
+    
+    var title = it.snippet.title;
+    var desc = it.snippet.description || "";
+    var chTitle = ch.title;
+    
+    // ====== STRICT ISLAMIC FILTER LOGIC ======
+    if (isFilterOn) {
+      var textToSearch = (title + " " + desc + " " + chTitle).toLowerCase();
+      for (var i = 0; i < blockedKeywords.length; i++) {
+        if (textToSearch.indexOf(blockedKeywords[i]) !== -1) {
+          return null; // Block this video
+        }
+      }
+    }
+    // =========================================
+
+    var sec = parseDur(it.contentDetails && it.contentDetails.duration);
+    return {
+      videoId: it.id,
+      title: title,
+      thumb: (it.snippet.thumbnails && (it.snippet.thumbnails.high||it.snippet.thumbnails.medium||it.snippet.thumbnails.default||{}).url) || '',
+      publishedAt: it.snippet.publishedAt,
+      channelId: ch.id, channelTitle: ch.title, channelThumb: ch.thumb,
+      durationSec: sec,
+      isShort: sec>0 && sec<=183,
+      viewCount: it.statistics ? it.statistics.viewCount : 0,
+      likeCount: it.statistics ? it.statistics.likeCount : 0,
+      commentCount: it.statistics ? it.statistics.commentCount : 0,
+      live: it.snippet.liveBroadcastContent && it.snippet.liveBroadcastContent !== 'none'
+    };
+  }
+
+  function fetchChannelPage(ch){
+    var st = channelState[ch.id] || (channelState[ch.id]={exhausted:false});
+    if(st.exhausted) return Promise.resolve([]);
+    var params = { part:'snippet', maxResults:50, playlistId: ch.uploadsPlaylistId };
+    if(st.nextPageToken) params.pageToken = st.nextPageToken;
+    return apiGet('playlistItems', params).then(function(d){
+      if(d.nextPageToken) st.nextPageToken = d.nextPageToken; else st.exhausted = true;
+      var ids = (d.items||[]).map(function(it){ return it.snippet && it.snippet.resourceId && it.snippet.resourceId.videoId; }).filter(Boolean);
+      if(!ids.length) return [];
+      return apiGet('videos', { part:'snippet,contentDetails,statistics', id: ids.join(',') }).then(function(vd){
+        return (vd.items||[]).map(function(it){ return classify(it, ch); }).filter(function(v){ return v && !v.live; });
+      });
+    }).catch(function(){ st.exhausted = true; return []; });
+  }
+
+  function engagementTier(channelId){ return Math.floor(Math.log2(1 + (watchScore[channelId]||0))); }
+
+  function recomputePool(){
+    longList = videosPool.filter(function(v){ return !v.isShort; }).sort(function(a,b){ return new Date(b.publishedAt)-new Date(a.publishedAt); });
+    shortList = videosPool.filter(function(v){ return v.isShort; }).sort(function(a,b){
+      var ta = engagementTier(a.channelId), tb = engagementTier(b.channelId);
+      if(ta!==tb) return tb-ta;
+      return new Date(b.publishedAt)-new Date(a.publishedAt);
+    });
+  }
+  var FETCH_CONCURRENCY = 6;
+  function ensureMoreVideos(){
+    if(loadingMore || !channels.length || !apiKey) return Promise.resolve(false);
+    var pending = channels.filter(function(c){ return !(channelState[c.id]&&channelState[c.id].exhausted); });
+    if(!pending.length) return Promise.resolve(false);
+    pending.sort(function(a,b){ return (watchScore[b.id]||0) - (watchScore[a.id]||0); });
+    loadingMore = true;
+    return runLimited(pending, FETCH_CONCURRENCY, fetchChannelPage).then(function(results){
+      var added = false;
+      results.forEach(function(list){
+        (list||[]).forEach(function(v){
+          if(!seenIds[v.videoId]){ seenIds[v.videoId]=true; videosPool.push(v); added=true; }
+        });
+      });
+      recomputePool();
+      loadingMore = false;
+      return added;
+    }).catch(function(){ loadingMore=false; return false; });
+  }
+
+  function allExhausted(){ return channels.length>0 && channels.every(function(c){ return channelState[c.id]&&channelState[c.id].exhausted; }); }
+
+  /* ============ HOME render ============ */
+  var homeScroll = document.getElementById('homeScroll');
+
+  function renderHomeEmpty(msg, showBtn){
+    homeScroll.innerHTML =
+      '<div class="emptystate"><div class="mark">📺</div><h3>Koi video nahi mili</h3><p>'+escapeHtml(msg)+'</p>'+
+      (showBtn? '<button class="set-btn" id="emptyOpenSettings">Settings Kholein</button>':'')+'</div>';
+    var b = document.getElementById('emptyOpenSettings');
+    if(b) b.addEventListener('click', openLock);
+  }
+
+  function vcardHtml(v){
+    return '<div class="vcard" data-vid="'+v.videoId+'">'+
+      '<div class="thumb"><img loading="lazy" src="'+v.thumb+'" alt=""><span class="dur">'+fmtDur(v.durationSec)+'</span></div>'+
+      '<div class="meta"><img src="'+v.channelThumb+'" alt=""><div class="txt"><h3>'+escapeHtml(v.title)+'</h3><p>'+escapeHtml(v.channelTitle)+' · '+timeAgo(v.publishedAt)+'</p></div></div>'+
+    '</div>';
+  }
+  function shortcardHtml(v, idx){
+    return '<div class="shortcard" data-shortindex="'+idx+'">'+
+      '<div class="thumb"><img loading="lazy" src="'+v.thumb+'" alt="">'+
+      '<svg class="playicon" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg></div>'+
+      '<h4>'+escapeHtml(v.title)+'</h4>'+
+    '</div>';
+  }
+
+  function renderHomeInitial(){
+    if(!channels.length || !apiKey){ renderHomeEmpty('Settings mein ja kar API key aur channel add karein.', true); return; }
+    if(!longList.length && !shortList.length){ renderHomeEmpty('Filter on hone ki wajah se koi halal video nahi mili. Dusre channels add karein.', false); return; }
+
+    var html = '';
+    var topLong = longList.slice(0,3);
+    if(topLong.length){ html += topLong.map(vcardHtml).join(''); }
+    if(shortList.length){
+      html += '<div class="shelf"><div class="section-label">Shorts</div><div class="shelf-row" id="shelfRow">'+
+        shortList.slice(0,12).map(function(v,i){ return shortcardHtml(v,i); }).join('') + '</div></div>';
+    }
+    var restLong = longList.slice(3);
+    if(restLong.length){ html += restLong.map(vcardHtml).join(''); }
+    homeScroll.innerHTML = html;
+    homeLongRenderedCount = longList.length;
+
+    var shelf = document.getElementById('shelfRow');
+    if(shelf){ shelf.querySelectorAll('.shortcard').forEach(function(el){
+      el.addEventListener('click', function(){ openShortsAt(parseInt(el.getAttribute('data-shortindex'),10)); });
+    }); }
+  }
+
+  function homeAppendMoreLong(){
+    if(longList.length <= homeLongRenderedCount) return;
+    var fresh = longList.slice(homeLongRenderedCount);
+    var div = document.createElement('div');
+    div.innerHTML = fresh.map(vcardHtml).join('');
+    while(div.firstChild) homeScroll.appendChild(div.firstChild);
+    homeLongRenderedCount = longList.length;
+  }
+
+  homeScroll.addEventListener('scroll', function(){
+    if(homeScroll.scrollTop + homeScroll.clientHeight >= homeScroll.scrollHeight - 500){
+      if(!allExhausted()){
+        ensureMoreVideos().then(function(changed){ if(changed) homeAppendMoreLong(); });
+      }
+    }
+  });
+
+  /* ============ SHORTS render + player management ============ */
+  var shortsFeed = document.getElementById('shortsFeed');
+  var shortsRendered = 0;
+  var players = {};
+  var activeIndex = -1;
+  var progressTimer = null;
+  var ytApiReady = false;
+  var pendingCreate = [];
+
+  window.onYouTubeIframeAPIReady = function(){ ytApiReady = true; pendingCreate.splice(0).forEach(createPlayerAt); };
+
+  function shortItemHtml(v, idx){
+    return '<div class="short-item" data-index="'+idx+'">'+
+      '<div class="poster" style="background-image:url(\''+v.thumb+'\')"></div>'+
+      '<div class="playerwrap"><div class="yt-slot" id="yt-slot-'+idx+'"></div><div class="tapcatch" data-index="'+idx+'"></div>'+
+      '<div class="soundhint" id="soundhint-'+idx+'"><svg viewBox="0 0 24 24" fill="#fff"><path d="M3 10v4h4l5 5V5L7 10H3z"/></svg></div>'+
+      '</div>'+
+      '<button class="backbtn" data-gohome="1"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>'+
+      '<div class="rightrail">'+
+        '<button class="rail-btn" data-act="like" data-vid="'+v.videoId+'"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg><span id="likecount-'+idx+'">'+fmtCount(v.likeCount)+'</span></button>'+
+        '<button class="rail-btn" data-act="comments" data-vid="'+v.videoId+'"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>'+fmtCount(v.commentCount)+'</span></button>'+
+        '<button class="rail-btn" data-act="share" data-vid="'+v.videoId+'" data-title="'+escapeHtml(v.title)+'"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M4 12v7a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-7"/><path d="M16 6l-4-4-4 4"/><path d="M12 2v14"/></svg><span>Share</span></button>'+
+      '</div>'+
+      '<div class="bottominfo"><img src="'+v.channelThumb+'" alt=""><div><div class="chname">'+escapeHtml(v.channelTitle)+'</div><div class="vtitle">'+escapeHtml(v.title)+'</div></div></div>'+
+      '<div class="progress-track"><div class="progress-fill" id="progress-'+idx+'"></div></div>'+
+    '</div>';
+  }
+
+  function shortsAppendNew(){
+    if(shortList.length <= shortsRendered){ return; }
+    var fresh = shortList.slice(shortsRendered);
+    var startIdx = shortsRendered;
+    var div = document.createElement('div');
+    div.innerHTML = fresh.map(function(v,i){ return shortItemHtml(v, startIdx+i); }).join('');
+    var nodes = Array.prototype.slice.call(div.children);
+    nodes.forEach(function(node){
+      shortsFeed.appendChild(node);
+      feedObserver.observe(node);
+      node.querySelector('.tapcatch').addEventListener('click', onTapVideo);
+      node.querySelectorAll('.rail-btn').forEach(function(b){ b.addEventListener('click', onRailBtn); });
+      node.querySelector('[data-gohome]').addEventListener('click', function(){ switchTab('home'); });
+    });
+    shortsRendered = shortList.length;
+  }
+
+  function ensureShortsLoaded(cb){
+    if(shortList.length){ shortsAppendNew(); if(cb) cb(); return; }
+    if(!apiKey || !channels.length){ renderShortsLoadingState('Settings mein ja kar API key aur channel add karein.', true); return; }
+    renderShortsLoadingState('Load ho raha hai…', false);
+    ensureMoreVideos().then(function(){
+      shortsAppendNew();
+      if(!shortList.length) renderShortsLoadingState('Filter ki wajah se koi Short nahi mili.', false);
+      else removeShortsLoadingState();
+      if(cb) cb();
+    });
+  }
+  function renderShortsLoadingState(msg, showBtn){
+    shortsFeed.innerHTML = '<div class="shortsloading" style="flex-direction:column; gap:14px;">'+
+      '<div>'+escapeHtml(msg)+'</div>'+
+      (showBtn? '<button class="set-btn" id="shortsOpenSettings">Settings Kholein</button>':'')+
+    '</div>';
+    var b = document.getElementById('shortsOpenSettings');
+    if(b) b.addEventListener('click', openLock);
+  }
+  function removeShortsLoadingState(){ var el=shortsFeed.querySelector('.shortsloading'); if(el) el.remove(); }
+
+  function openShortsAt(idx){
+    switchTab('shorts');
+    ensureShortsLoaded(function(){
+      var el = shortsFeed.querySelector('.short-item[data-index="'+idx+'"]');
+      if(el) el.scrollIntoView({block:'start'});
+    });
+  }
+
+  var feedObserver = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting && entry.intersectionRatio > 0.6){
+        var idx = parseInt(entry.target.getAttribute('data-index'),10);
+        if(idx !== activeIndex) activateIndex(idx);
+      }
+    });
+  }, { root: shortsFeed, threshold:[0,0.6,1] });
+
+  function createPlayerAt(idx){
+    if(idx<0 || idx>=shortList.length) return;
+    if(players[idx]) return;
+    if(!ytApiReady){ pendingCreate.push(idx); return; }
+    var v = shortList[idx];
+    var slot = document.getElementById('yt-slot-'+idx);
+    if(!slot) return;
+    try{
+      players[idx] = new YT.Player('yt-slot-'+idx, {
+        videoId: v.videoId,
+        playerVars: { autoplay: idx===activeIndex?1:0, mute:1, playsinline:1, controls:0, rel:0, modestbranding:1, loop:1, playlist:v.videoId, iv_load_policy:3 },
+        events: {
+          onReady: function(e){
+            if(idx===activeIndex){ try{ if(soundOn) e.target.unMute(); else e.target.mute(); e.target.playVideo(); }catch(_){} }
+          }
+        }
+      });
+    }catch(e){}
+  }
+
+  function destroyPlayerAt(idx){
+    var p = players[idx];
+    if(p){ try{ p.destroy(); }catch(e){} delete players[idx]; }
+  }
+
+  var lastWatchFraction = 0;
+  function activateIndex(i){
+    if(activeIndex>=0 && activeIndex!==i && lastWatchFraction>=0.6 && shortList[activeIndex]){
+      bumpWatchScore(shortList[activeIndex].channelId);
+    }
+    lastWatchFraction = 0;
+    activeIndex = i;
+    var keep = {}; keep[i]=1; if(i>0) keep[i-1]=1; if(i<shortList.length-1) keep[i+1]=1;
+    Object.keys(players).forEach(function(k){ if(!keep[k]) destroyPlayerAt(parseInt(k,10)); });
+    Object.keys(keep).forEach(function(k){ if(!players[k]) createPlayerAt(parseInt(k,10)); });
+
+    Object.keys(keep).forEach(function(k){
+      var idx = parseInt(k,10); var p = players[idx]; if(!p) return;
+      try{
+        if(idx===i){ if(soundOn) p.unMute(); else p.mute(); p.playVideo(); }
+        else { p.pauseVideo(); p.mute(); }
+      }catch(e){}
+    });
+
+    clearInterval(progressTimer);
+    progressTimer = setInterval(function(){
+      var p = players[activeIndex]; if(!p || typeof p.getCurrentTime!=='function') return;
+      try{
+        var d=p.getDuration()||0, c=p.getCurrentTime()||0;
+        if(d>0) lastWatchFraction = c/d;
+        var bar=document.getElementById('progress-'+activeIndex);
+        if(bar && d>0) bar.style.width=(c/d*100)+'%';
+      }catch(e){}
+    }, 250);
+
+    if(i >= shortList.length-3 && !allExhausted()){
+      ensureMoreVideos().then(function(changed){ if(changed) shortsAppendNew(); });
+    }
+  }
+
+  function onTapVideo(e){
+    var idx = parseInt(e.currentTarget.getAttribute('data-index'),10);
+    soundOn = !soundOn; safeSet(LS_SOUND, soundOn?'1':'0');
+    var p = players[idx];
+    if(p){ try{ if(soundOn) p.unMute(); else p.mute(); }catch(err){} }
+    var hint = document.getElementById('soundhint-'+idx);
+    if(hint){
+      hint.innerHTML = soundOn
+        ? '<svg viewBox="0 0 24 24" fill="#fff"><path d="M3 10v4h4l5 5V5L7 10H3z"/></svg>'
+        : '<svg viewBox="0 0 24 24" fill="#fff"><path d="M3 10v4h4l5 5V5L7 10H3z"/></svg><line x1="19" y1="5" x2="5" y2="19" stroke="#fff" stroke-width="2"/>';
+      hint.classList.add('show');
+      setTimeout(function(){ hint.classList.remove('show'); }, 500);
+    }
+  }
+
+  var likedState = {};
+  function onRailBtn(e){
+    e.stopPropagation();
+    var btn = e.currentTarget;
+    var act = btn.getAttribute('data-act');
+    var vid = btn.getAttribute('data-vid');
+    if(act==='like'){
+      likedState[vid] = !likedState[vid];
+      btn.classList.toggle('liked', !!likedState[vid]);
+    } else if(act==='share'){
+      var title = btn.getAttribute('data-title');
+      var url = 'https://www.youtube.com/watch?v='+vid;
+      if(navigator.share){ navigator.share({title:title, url:url}).catch(function(){}); }
+      else if(navigator.clipboard){ navigator.clipboard.writeText(url).then(function(){ toast('Link copy ho gaya'); }).catch(function(){ toast(url); }); }
+    } else if(act==='comments'){
+      openComments(vid);
+    }
+  }
+
+  function toast(msg){
+    var t=document.createElement('div');
+    t.textContent=msg;
+    t.style.cssText='position:fixed;left:50%;bottom:110px;transform:translateX(-50%);background:rgba(0,0,0,.85);color:#fff;padding:9px 16px;border-radius:20px;font-size:13px;z-index:999;';
+    document.body.appendChild(t);
+    setTimeout(function(){ t.remove(); }, 1800);
+  }
+  /* ============ comments sheet ============ */
+  var commentsBackdrop = document.getElementById('commentsBackdrop');
+  var commentsBody = document.getElementById('commentsBody');
+  document.getElementById('commentsClose').addEventListener('click', function(){ commentsBackdrop.hidden = true; });
+  commentsBackdrop.addEventListener('click', function(e){ if(e.target===commentsBackdrop) commentsBackdrop.hidden = true; });
+
+  function openComments(videoId){
+    commentsBackdrop.hidden = false;
+    commentsBody.innerHTML = '<div class="sheet-msg">Load ho rahe hain…</div>';
+    apiGet('commentThreads', { part:'snippet', videoId: videoId, maxResults:20, order:'relevance', textFormat:'plainText' })
+      .then(function(d){
+        if(!d.items || !d.items.length){ commentsBody.innerHTML='<div class="sheet-msg">Koi comment nahi.</div>'; return; }
+        commentsBody.innerHTML = d.items.map(function(it){
+          var c = it.snippet.topLevelComment.snippet;
+          return '<div class="comment"><img src="'+c.authorProfileImageUrl+'" alt=""><div class="cbody"><div class="cauthor">'+escapeHtml(c.authorDisplayName)+'</div><div class="ctext">'+escapeHtml(c.textDisplay)+'</div></div></div>';
+        }).join('');
+      })
+      .catch(function(err){
+        var msg = /disabled/i.test(err.message) ? 'Is video par comments band hain.' : 'Comments load nahi ho sakay.';
+        commentsBody.innerHTML = '<div class="sheet-msg">'+escapeHtml(msg)+'</div>';
+      });
+  }
+
+  /* ============ tab switching ============ */
+  function switchTab(tab){
+    document.getElementById('homeView').classList.toggle('active', tab==='home');
+    document.getElementById('shortsView').classList.toggle('active', tab==='shorts');
+    document.querySelectorAll('.navbtn[data-tab]').forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-tab')===tab); });
+    if(tab!=='shorts'){
+      if(activeIndex>=0 && lastWatchFraction>=0.6 && shortList[activeIndex]){ bumpWatchScore(shortList[activeIndex].channelId); flushWatchScore(); }
+      Object.keys(players).forEach(function(k){ try{ players[k].pauseVideo(); }catch(e){} });
+    } else if(activeIndex>=0 && players[activeIndex]){
+      try{ players[activeIndex].playVideo(); }catch(e){}
+    }
+  }
+  document.querySelectorAll('.navbtn[data-tab]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var tab = b.getAttribute('data-tab');
+      if(tab==='shorts'){ ensureShortsLoaded(); switchTab('shorts'); }
+      else { switchTab(tab); }
+    });
+  });
+
+  /* ============ PIN LOCK ============ */
+  var lockView = document.getElementById('lockView');
+  var pinBuffer = '';
+  var pinDots = document.getElementById('pinDots');
+  var defaultHint = document.getElementById('defaultHint');
+
+  function openLock(){
+    pinBuffer='';
+    renderDots();
+    defaultHint.style.display = (safeGet(LS_PIN) ? 'none' : 'block');
+    lockView.classList.add('active');
+  }
+  function closeLock(){ lockView.classList.remove('active'); }
+  document.getElementById('lockBack').addEventListener('click', closeLock);
+  document.getElementById('navSettings').addEventListener('click', openLock);
+
+  function renderDots(){
+    var dots = pinDots.querySelectorAll('.dot');
+    dots.forEach(function(d,i){ d.classList.toggle('filled', i < pinBuffer.length); });
+  }
+  function shakeFail(){
+    pinDots.classList.add('shake');
+    setTimeout(function(){ pinDots.classList.remove('shake'); pinBuffer=''; renderDots(); }, 420);
+    if(navigator.vibrate) try{ navigator.vibrate(120); }catch(e){}
+  }
+
+  document.getElementById('pinKeypad').addEventListener('click', function(e){
+    var btn = e.target.closest('.key');
+    if(!btn || btn.classList.contains('ghost')) return;
+    var k = btn.getAttribute('data-k');
+    if(k==='back'){ pinBuffer = pinBuffer.slice(0,-1); renderDots(); return; }
+    if(pinBuffer.length>=4) return;
+    pinBuffer += k;
+    renderDots();
+    if(pinBuffer.length===4){
+      setTimeout(function(){
+        if(pinBuffer === pin){ closeLock(); openSettings(); }
+        else { shakeFail(); }
+      }, 150);
+    }
+  });
+
+  /* ============ SETTINGS ============ */
+  var settingsView = document.getElementById('settingsView');
+  
+  var filterToggle = document.getElementById('filterToggle');
+  filterToggle.checked = isFilterOn;
+  
+  filterToggle.addEventListener('change', function(e){
+    isFilterOn = e.target.checked;
+    safeSet(LS_FILTER, isFilterOn ? '1' : '0');
+    resetPoolAndReload(); // Reload data with new filter applied
+  });
+
+  function openSettings(){
+    renderApiKeyField();
+    renderChips();
+    settingsView.classList.add('active');
+  }
+  document.getElementById('settingsClose').addEventListener('click', function(){ settingsView.classList.remove('active'); });
+
+  function renderApiKeyField(){ document.getElementById('apiKeyInput').value = apiKey; }
+  document.getElementById('toggleKeyVis').addEventListener('click', function(){
+    var inp = document.getElementById('apiKeyInput');
+    inp.type = inp.type==='password' ? 'text' : 'password';
+  });
+  document.getElementById('saveKeyBtn').addEventListener('click', function(){
+    apiKey = document.getElementById('apiKeyInput').value.trim();
+    safeSet(LS_KEY, apiKey);
+    setStatus('keyStatus', 'API key save ho gayi.', 'ok');
+    bootData();
+  });
+
+  function setStatus(id, msg, kind){
+    var el = document.getElementById(id);
+    el.innerHTML = msg ? '<div class="set-status '+kind+'">'+escapeHtml(msg)+'</div>' : '';
+  }
+
+  function renderChips(){
+    var row = document.getElementById('chipList');
+    if(!channels.length){ row.innerHTML = '<div class="set-empty">Abhi koi channel add nahi hua.</div>'; return; }
+    row.innerHTML = channels.map(function(c){
+      return '<div class="set-chip" data-id="'+c.id+'">'+(c.thumb?'<img src="'+c.thumb+'" alt="">':'')+'<span>'+escapeHtml(c.title)+'</span><button aria-label="Remove">✕</button></div>';
+    }).join('');
+    row.querySelectorAll('.set-chip button').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var id = btn.closest('.set-chip').getAttribute('data-id');
+        channels = channels.filter(function(c){ return c.id!==id; });
+        saveChannels();
+        renderChips();
+        resetPoolAndReload();
+      });
+    });
+  }
+
+  document.getElementById('addChannelBtn').addEventListener('click', addChannel);
+  document.getElementById('channelInput').addEventListener('keydown', function(e){ if(e.key==='Enter') addChannel(); });
+
+  function addChannel(){
+    var input = document.getElementById('channelInput');
+    var raw = input.value;
+    if(!apiKey){ setStatus('channelStatus','Pehle API key add karke Save karein.','error'); return; }
+    var parsed = parseChannelInput(raw);
+    if(!parsed){ setStatus('channelStatus','Channel URL, @handle ya ID likhein.','error'); return; }
+    setStatus('channelStatus','Channel dhoonda ja raha hai…','ok');
+    resolveChannelId(parsed).then(function(id){
+      if(channels.some(function(c){ return c.id===id; })){ setStatus('channelStatus','Ye channel pehle se add hai.','ok'); input.value=''; return; }
+      return fetchChannelMeta(id).then(function(meta){
+        channels.push(meta); saveChannels(); renderChips(); input.value=''; setStatus('channelStatus','','');
+        resetPoolAndReload();
+      });
+    }).catch(function(err){ setStatus('channelStatus', err.message||'Kuch ghalat ho gaya.','error'); });
+  }
+
+  function resetPoolAndReload(){
+    videosPool=[]; seenIds={}; channelState={}; longList=[]; shortList=[];
+    shortsFeed.innerHTML=''; shortsRendered=0; activeIndex=-1;
+    Object.keys(players).forEach(function(k){ destroyPlayerAt(parseInt(k,10)); });
+    bootData();
+  }
+
+  /* ============ bulk import from JSON file ============ */
+  var importCancelled = false;
+  document.getElementById('importFileBtn').addEventListener('click', function(){
+    if(!apiKey){ setStatus('channelStatus','Pehle API key add karke Save karein.','error'); return; }
+    document.getElementById('importFileInput').click();
+  });
+  document.getElementById('importFileInput').addEventListener('change', function(e){
+    var file = e.target.files && e.target.files[0];
+    e.target.value = '';
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      var data;
+      try{ data = JSON.parse(reader.result); }catch(err){ renderImportStatus('File theek JSON nahi hai.', true); return; }
+      var list = Array.isArray(data) ? data : (Array.isArray(data.channels) ? data.channels : null);
+      if(!list || !list.length){ renderImportStatus('File mein koi channel nahi mila.', true); return; }
+      startBulkImport(list);
+    };
+    reader.onerror = function(){ renderImportStatus('File parh nahi saki.', true); };
+    reader.readAsText(file);
+  });
+
+  function renderImportStatus(msg, isError){
+    document.getElementById('importProgress').innerHTML = msg ? '<div class="set-status '+(isError?'error':'ok')+'" style="margin-top:10px;">'+escapeHtml(msg)+'</div>' : '';
+  }
+  
+  function startBulkImport(list){
+    importCancelled = false;
+    var total = list.length, done = 0, added = 0, skipped = 0, failed = 0;
+    var existingIds = {}; channels.forEach(function(c){ existingIds[c.id]=true; });
+
+    function paint(){
+      document.getElementById('importProgress').innerHTML =
+        '<div class="set-status ok" style="margin-top:10px;">'+done+' / '+total+' check ho chuke — '+added+' add huay, '+skipped+' pehle se thay, '+failed+' nahi milay.'+
+        (done<total ? ' <a href="#" id="importCancelLink" style="color:#c13a3a; font-weight:700;">Rokein</a>' : '')+
+        '</div>';
+      var link = document.getElementById('importCancelLink');
+      if(link) link.addEventListener('click', function(ev){ ev.preventDefault(); importCancelled = true; });
+    }
+    paint();
+
+    runLimited(list, 4, function(entry){
+      if(importCancelled) { done++; return null; }
+      var idPromise;
+      if(entry.id){ idPromise = Promise.resolve(entry.id); }
+      else if(entry.handle){ idPromise = resolveChannelIdCheap({kind:'handle', value: entry.handle}); }
+      else if(entry.url){ var parsed = parseChannelInput(entry.url); idPromise = parsed ? resolveChannelIdCheap(parsed) : Promise.resolve(null); }
+      else { idPromise = Promise.resolve(null); }
+
+      return idPromise.then(function(id){
+        done++;
+        if(!id){ failed++; paint(); return null; }
+        if(existingIds[id]){ skipped++; paint(); return null; }
+        existingIds[id] = true;
+        return fetchChannelMeta(id).then(function(meta){
+          channels.push(meta);
+          added++;
+          if(added % 5 === 0 || done === total) { saveChannels(); renderChips(); }
+          paint();
+          return meta;
+        }).catch(function(){ failed++; paint(); return null; });
+      }).catch(function(){ done++; failed++; paint(); return null; });
+    }).then(function(){
+      saveChannels(); renderChips();
+      var finalMsg = importCancelled
+        ? ('Rok diya gaya — '+added+' channels add ho chuke thay.')
+        : (added+' naye channels add ho gaye ('+skipped+' pehle se thay, '+failed+' nahi milay).');
+      renderImportStatus(finalMsg, false);
+      if(added>0) resetPoolAndReload();
+    });
+  }
+
+  document.getElementById('savePinBtn').addEventListener('click', function(){
+    var a = document.getElementById('newPinInput').value.trim();
+    var b = document.getElementById('confirmPinInput').value.trim();
+    if(!/^\d{4}$/.test(a)){ setStatus('pinStatus','Code bilkul 4 digits ka hona chahiye.','error'); return; }
+    if(a!==b){ setStatus('pinStatus','Dono code match nahi karte.','error'); return; }
+    pin = a; safeSet(LS_PIN, pin);
+    document.getElementById('newPinInput').value=''; document.getElementById('confirmPinInput').value='';
+    setStatus('pinStatus','Naya code save ho gaya.','ok');
+  });
+
+  /* ============ boot ============ */
+  function bootData(){
+    if(!apiKey || !channels.length){ renderHomeInitial(); return; }
+    renderHomeEmpty('Videos load ho rahi hain…', false);
+    ensureMoreVideos().then(function(){ renderHomeInitial(); });
+  }
+
+  renderHomeInitial();
+  bootData();
+
+})();
+</script>
+</body>
+</html>
